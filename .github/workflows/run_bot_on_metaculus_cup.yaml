@@ -12,8 +12,11 @@ concurrency:
 
 
 # Daily job to run the simple forecast bot
+# Off by default (no prizes for bots, re-forecasts every run, costs LLM credit).
+# Set repository variable CUP_ENABLED=true to turn it on.
 jobs:
   forecast_job:
+    if: vars.CUP_ENABLED == 'true'
     runs-on: ubuntu-latest # determines the machine that will run the job - keep as is
     steps: # sets up the steps that will be run in order
       # setup repository with all necessary dependencies - keep as is

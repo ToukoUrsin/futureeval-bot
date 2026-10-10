@@ -11,9 +11,30 @@ concurrency:
   cancel-in-progress: false
 
 
-# Daily job to run the simple forecast bot
+# Guard: the forecast job only runs once the METACULUS_TOKEN secret exists, and
+# never while the repository variable BOT_PAUSED is "true". Until the token is
+# added, each scheduled run is a few-second no-op instead of a failure.
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+          BOT_PAUSED: ${{ vars.BOT_PAUSED }}
+        run: |
+          if [ -n "$METACULUS_TOKEN" ] && [ "$BOT_PAUSED" != "true" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping: METACULUS_TOKEN not set or BOT_PAUSED=true" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   forecast_job:
+    needs: gate
+    if: needs.gate.outputs.ready == 'true'
     runs-on: ubuntu-latest # determines the machine that will run the job - keep as is
     steps: # sets up the steps that will be run in order
       # setup repository with all necessary dependencies - keep as is

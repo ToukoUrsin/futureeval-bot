@@ -1,0 +1,25 @@
+name: LLM smoke test
+
+on:
+  workflow_dispatch:
+
+# Calls each configured model once with a tiny prompt. Needs no Metaculus token
+# and publishes nothing. Costs a few cents.
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - run: poetry install --no-interaction --no-root
+      - name: Invoke models
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: poetry run python llm_smoke.py

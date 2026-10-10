@@ -1,3 +1,17 @@
+# futureeval-bot (Touko Ursin)
+
+Fork of [Metaculus/metac-bot-template](https://github.com/Metaculus/metac-bot-template) for the
+[Fall 2026 FutureEval](https://www.metaculus.com/tournament/fall-futureeval-2026/) (id 33121) and MiniBench (`minibench`).
+Changes from upstream: models pinned in `main.py` (Claude Opus 5.5 forecasts, Haiku 4.5 parsing/summaries,
+OpenAI `gpt-4o-search-preview` research); Fall tournament id pinned (the locked forecasting-tools still points
+to Summer); the 20-minute tournament cron runs only once the `METACULUS_TOKEN` secret exists and `BOT_PAUSED`
+is not `true`; Metaculus Cup off unless `CUP_ENABLED=true`; `LLM smoke test` and keepalive workflows added.
+
+Start: add the bot token (`gh secret set METACULUS_TOKEN -R ToukoUrsin/futureeval-bot`). Pause:
+`gh variable set BOT_PAUSED -R ToukoUrsin/futureeval-bot --body true`.
+
+---
+
 # Simple Metaculus forecasting bot
 This repository contains a simple bot meant to get you started with creating your own bot for the AI Forecasting Tournament. Go to https://www.metaculus.com/futureeval/participate/ for more info and tournament rules (and then go to the  "Getting Started" section of our [resources](https://www.metaculus.com/notebooks/38928/ai-benchmark-resources/#want-to-join-the-ai-forecasting-benchmark) page).
 

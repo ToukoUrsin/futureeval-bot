@@ -715,17 +715,26 @@ if __name__ == "__main__":
         folder_to_save_reports_to=None,
         skip_previously_forecasted_questions=True,
         extra_metadata_in_explanation=True,
-        # llms={
-        #     "default": GeneralLlm(
-        #         model="openrouter/openai/gpt-4o",
-        #         temperature=0.3,
-        #         timeout=40,
-        #         allowed_tries=2,
-        #     ),
-        #     "summarizer": "openai/gpt-4o-mini",
-        #     "researcher": "asknews/news-summaries",
-        #     "parser": "openai/gpt-4o-mini",
-        # },
+        # Model choice (Touko's policy: Opus 5.5 for quality). Opus 5.5 rejects
+        # temperature, so none is sent. Cheap Haiku handles parsing/summaries.
+        # Research uses OpenAI's search model (the template's tested path).
+        llms={
+            "default": GeneralLlm(
+                model="anthropic/claude-opus-5-5",
+                timeout=300,
+                allowed_tries=2,
+                max_tokens=16000,
+            ),
+            "summarizer": GeneralLlm(
+                model="anthropic/claude-haiku-4-5", temperature=0.3, timeout=120
+            ),
+            "researcher": GeneralLlm(
+                model="openai/gpt-4o-search-preview", timeout=180, allowed_tries=2
+            ),
+            "parser": GeneralLlm(
+                model="anthropic/claude-haiku-4-5", temperature=0.3, timeout=120
+            ),
+        },
     )
 
     # Per-mode tournament URL shown in the summary banner footer. These
@@ -741,10 +750,13 @@ if __name__ == "__main__":
     # exceptions, since return_exceptions=True) which then flows into the
     # summary printers below.
     client = MetaculusClient()
+    # Locked forecasting-tools 0.2.92 still maps CURRENT_AI_COMPETITION_ID to the
+    # Summer season, so pin Fall 2026 (id 33121, slug fall-futureeval-2026).
+    FALL_FUTUREEVAL_2026_ID = 33121
     if run_mode == "tournament":
         seasonal_tournament_reports = asyncio.run(
             template_bot.forecast_on_tournament(
-                client.CURRENT_AI_COMPETITION_ID, return_exceptions=True
+                FALL_FUTUREEVAL_2026_ID, return_exceptions=True
             )
         )
         minibench_reports = asyncio.run(
