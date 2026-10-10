@@ -2,8 +2,8 @@
 
 Fork of [Metaculus/metac-bot-template](https://github.com/Metaculus/metac-bot-template) for the
 [Fall 2026 FutureEval](https://www.metaculus.com/tournament/fall-futureeval-2026/) (id 33121) and MiniBench (`minibench`).
-Changes from upstream: models pinned in `main.py` (Claude Opus 5.5 forecasts, Haiku 4.5 parsing/summaries,
-OpenAI `gpt-4o-search-preview` research); Fall tournament id pinned (the locked forecasting-tools still points
+Changes from upstream: models pinned in `main.py` (Claude Opus 5.5 forecasts and web-search research,
+Haiku 4.5 parsing/summaries; only `ANTHROPIC_API_KEY` needed); Fall tournament id pinned (the locked forecasting-tools still points
 to Summer); the 20-minute tournament cron runs only once the `METACULUS_TOKEN` secret exists and `BOT_PAUSED`
 is not `true`; Metaculus Cup off unless `CUP_ENABLED=true`; `LLM smoke test` and keepalive workflows added.
 

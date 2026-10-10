@@ -717,7 +717,8 @@ if __name__ == "__main__":
         extra_metadata_in_explanation=True,
         # Model choice (Touko's policy: Opus 5.5 for quality). Opus 5.5 rejects
         # temperature, so none is sent. Cheap Haiku handles parsing/summaries.
-        # Research uses OpenAI's search model (the template's tested path).
+        # Research: Opus 5.5 with Anthropic's native web search (via litellm
+        # web_search_options). OpenAI search-preview models are deprecated.
         llms={
             "default": GeneralLlm(
                 model="anthropic/claude-opus-5-5",
@@ -729,7 +730,11 @@ if __name__ == "__main__":
                 model="anthropic/claude-haiku-4-5", temperature=0.3, timeout=120
             ),
             "researcher": GeneralLlm(
-                model="openai/gpt-4o-search-preview", timeout=180, allowed_tries=2
+                model="anthropic/claude-opus-5-5",
+                timeout=300,
+                allowed_tries=2,
+                max_tokens=16000,
+                web_search_options={"search_context_size": "medium"},
             ),
             "parser": GeneralLlm(
                 model="anthropic/claude-haiku-4-5", temperature=0.3, timeout=120
