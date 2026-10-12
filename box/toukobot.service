@@ -1,0 +1,11 @@
+[Unit]
+Description=toukobot: one Metaculus FutureEval/MiniBench forecasting pass (research-fleet)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/data/tracks/metaculus-bot/live/bot/box/run.sh tournament
+TimeoutStartSec=30min
+Nice=10
+CPUQuota=50%
+MemoryMax=1G

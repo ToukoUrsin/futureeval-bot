@@ -1,3 +1,8 @@
+> **toukobot deployment (touko-agents box).** This fork runs on the box, not GitHub Actions: systemd user timer
+> `toukobot.timer` (every 20 min) runs `box/run.sh tournament`; models go through the box CLIProxyAPI pool
+> (gpt-6.1-sol forecasts, Opus 5.5 web-search research, Haiku parsing). Stop: `systemctl --user disable --now toukobot.timer`
+> or `touch PAUSED`. Logs: `/data/tracks/metaculus-bot/live/logs/`. Actions forecast workflows stay disabled.
+
 # futureeval-bot (Touko Ursin)
 
 Fork of [Metaculus/metac-bot-template](https://github.com/Metaculus/metac-bot-template) for the

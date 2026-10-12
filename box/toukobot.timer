@@ -1,0 +1,10 @@
+[Unit]
+Description=toukobot every 20 min (Metaculus Fall FutureEval 2026 + MiniBench)
+
+[Timer]
+OnCalendar=*:07,27,47
+Persistent=false
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target

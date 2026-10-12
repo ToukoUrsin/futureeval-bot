@@ -45,6 +45,44 @@ dotenv.load_dotenv()
 logger = logging.getLogger(__name__)
 
 
+# All model calls go through the touko-agents CLIProxyAPI subscription pool
+# (OpenAI/Anthropic-compatible, LLM_PROXY_BASE + LLM_PROXY_KEY). Forecasts:
+# gpt-6.1-sol. Research: Opus 5.5 with Anthropic native web search (Sol has no
+# live search through the proxy). Parsing/summaries: Haiku 4.5.
+def build_llms() -> dict:
+    import os
+
+    base = os.environ.get("LLM_PROXY_BASE", "http://127.0.0.1:8317")
+    key = os.environ["LLM_PROXY_KEY"]
+    sol = dict(base_url=f"{base}/v1", api_key=key)
+    claude = dict(api_base=base, api_key=key)
+    return {
+        "default": GeneralLlm(
+            model="openai/gpt-6.1-sol", timeout=600, allowed_tries=2, **sol
+        ),
+        "summarizer": GeneralLlm(
+            model="anthropic/claude-haiku-4-5-20251001",
+            temperature=0.3,
+            timeout=120,
+            **claude,
+        ),
+        "researcher": GeneralLlm(
+            model="anthropic/claude-opus-5-5",
+            timeout=600,
+            allowed_tries=2,
+            max_tokens=16000,
+            web_search_options={"search_context_size": "medium"},
+            **claude,
+        ),
+        "parser": GeneralLlm(
+            model="anthropic/claude-haiku-4-5-20251001",
+            temperature=0.3,
+            timeout=120,
+            **claude,
+        ),
+    }
+
+
 class FallTemplateBot2026(ForecastBot):
     """
     This is the template bot for the Fall 2026 FutureEval Bot Tournament.
@@ -715,31 +753,7 @@ if __name__ == "__main__":
         folder_to_save_reports_to=None,
         skip_previously_forecasted_questions=True,
         extra_metadata_in_explanation=True,
-        # Model choice (Touko's policy: Opus 5.5 for quality). Opus 5.5 rejects
-        # temperature, so none is sent. Cheap Haiku handles parsing/summaries.
-        # Research: Opus 5.5 with Anthropic's native web search (via litellm
-        # web_search_options). OpenAI search-preview models are deprecated.
-        llms={
-            "default": GeneralLlm(
-                model="anthropic/claude-opus-5-5",
-                timeout=300,
-                allowed_tries=2,
-                max_tokens=16000,
-            ),
-            "summarizer": GeneralLlm(
-                model="anthropic/claude-haiku-4-5", temperature=0.3, timeout=120
-            ),
-            "researcher": GeneralLlm(
-                model="anthropic/claude-opus-5-5",
-                timeout=300,
-                allowed_tries=2,
-                max_tokens=16000,
-                web_search_options={"search_context_size": "medium"},
-            ),
-            "parser": GeneralLlm(
-                model="anthropic/claude-haiku-4-5", temperature=0.3, timeout=120
-            ),
-        },
+        llms=build_llms(),
     )
 
     # Per-mode tournament URL shown in the summary banner footer. These
@@ -755,8 +769,8 @@ if __name__ == "__main__":
     # exceptions, since return_exceptions=True) which then flows into the
     # summary printers below.
     client = MetaculusClient()
-    # Locked forecasting-tools 0.2.92 still maps CURRENT_AI_COMPETITION_ID to the
-    # Summer season, so pin Fall 2026 (id 33121, slug fall-futureeval-2026).
+    # Pin Fall 2026 (id 33121, slug fall-futureeval-2026); forecasting-tools
+    # 0.2.92 still maps CURRENT_AI_COMPETITION_ID to the Summer season.
     FALL_FUTUREEVAL_2026_ID = 33121
     if run_mode == "tournament":
         seasonal_tournament_reports = asyncio.run(
